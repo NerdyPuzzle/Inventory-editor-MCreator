@@ -1,0 +1,14 @@
+{
+  "id": "inventory_editor",
+  "weight": 3001,
+  "javaplugin": "net.nerdypuzzle.inveditor.Launcher",
+  "supportedversions": [
+    2026001
+  ],
+  "info": {
+    "name": "Inventory editor",
+    "version": "1.0",
+    "description": "Allows for editing the vanilla player inventory",
+    "author": "NerdyPuzzle"
+  }
+}
