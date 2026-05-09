@@ -30,6 +30,8 @@ public class InventoryEdit extends GeneratableElement implements IGUI {
     public final transient int W;
     public final transient int H;
 
+    public int type;
+
 
     public InventoryEdit(ModElement element) {
         super(element);
@@ -37,6 +39,8 @@ public class InventoryEdit extends GeneratableElement implements IGUI {
         this.H = InveditGui.H;
         this.gridSettings = new GridSettings();
         this.components = new ArrayList<>();
+
+        this.type = 0;
     }
 
     @Override public List<GUIComponent> getComponents() {

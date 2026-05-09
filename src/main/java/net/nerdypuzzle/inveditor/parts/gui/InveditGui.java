@@ -197,8 +197,8 @@ public class InveditGui extends JComponent implements MouseMotionListener, Mouse
 
         g.setColor(Color.gray.brighter().brighter());
 
-        int gw = (Integer) InveditGuiEditor.spa1.getValue();
-        int gh = (Integer) InveditGuiEditor.spa2.getValue();
+        int gw = (Integer) InveditGuiEditor.guiType.getSelectedIndex() == 0 ? 176 : 195;
+        int gh = (Integer) InveditGuiEditor.guiType.getSelectedIndex() == 0 ? 166 : 136;
 
         if (InveditGuiEditor.renderBgLayer.isSelected()) {
             g.drawImage(InveditGuiEditor.guiImage, (int) Math.ceil(W / 2.0 - gw / 2.0),

@@ -44,6 +44,7 @@ public class InventoryEditGUI extends ModElementGUI<InventoryEdit> {
             guiEditor.setComponentList(invEditor.components);
         guiEditor.setSlotComponentsEnabled(true);
         guiEditor.renderBgLayer.setSelected(true);
+        guiEditor.getGUITypeSelector().setSelectedIndex(invEditor.type);
         if (invEditor.gridSettings != null) {
             guiEditor.sx.setValue(invEditor.gridSettings.sx);
             guiEditor.sy.setValue(invEditor.gridSettings.sy);
@@ -67,6 +68,7 @@ public class InventoryEditGUI extends ModElementGUI<InventoryEdit> {
         invEditor.gridSettings.sy = (int) guiEditor.sy.getValue();
         invEditor.gridSettings.ox = (int) guiEditor.ox.getValue();
         invEditor.gridSettings.oy = (int) guiEditor.oy.getValue();
+        invEditor.type = guiEditor.getGUITypeSelector().getSelectedIndex();
         invEditor.gridSettings.snapOnGrid = guiEditor.snapOnGrid.isSelected();
 
         return invEditor;

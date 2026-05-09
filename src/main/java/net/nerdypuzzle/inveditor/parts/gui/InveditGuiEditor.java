@@ -6,6 +6,7 @@ import net.mcreator.element.parts.gui.Image;
 import net.mcreator.element.parts.gui.Slot;
 import net.mcreator.ui.MCreator;
 import net.mcreator.ui.component.JEmptyBox;
+import net.mcreator.ui.component.util.ComponentUtils;
 import net.mcreator.ui.component.util.PanelUtils;
 import net.mcreator.ui.component.zoompane.JZoomPane;
 import net.mcreator.ui.init.L10N;
@@ -83,6 +84,9 @@ public class InveditGuiEditor extends JPanel {
     private final Map<WYSIWYGComponentRegistration<?>, JButton> addComponentButtonsMap = new HashMap<>();
 
     public BufferedImage guiImage = ImageUtils.toBufferedImage(UIRES.get("invimg").getImage());
+
+    public final JComboBox<String> guiType = new JComboBox<>(
+            new String[] { "Survival", "Creative" });
 
     public InveditGuiEditor(final MCreator mcreator) {
         super(new BorderLayout(5, 0));
@@ -286,12 +290,31 @@ public class InveditGuiEditor extends JPanel {
 
         adds.setOpaque(false);
 
+        JPanel adds2 = new JPanel();
+        adds2.setLayout(new BoxLayout(adds2, BoxLayout.PAGE_AXIS));
+        ComponentUtils.makeSection(adds2, L10N.t("elementgui.gui.gui_properties"));
+
+        JComponent pon = PanelUtils.westAndEastElement(new JLabel((L10N.t("elementgui.gui.gui_type"))), guiType);
+
+        adds2.add(PanelUtils.join(FlowLayout.LEFT, pon));
+        adds2.setOpaque(false);
+
+        JScrollPane scrollPane = new JScrollPane(adds2);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        
+        sidebar.add("North", scrollPane);
         sidebar.add("Center", comppan);
         sidebar.add("South", adds);
 
         spa1.addChangeListener(event -> checkAndUpdateGUISize());
         spa2.addChangeListener(event -> checkAndUpdateGUISize());
         renderBgLayer.addActionListener(e -> checkAndUpdateGUISize());
+        guiType.addActionListener(e -> checkAndUpdateGUISize());
 
         editor.setOpaque(false);
 
@@ -372,7 +395,16 @@ public class InveditGuiEditor extends JPanel {
         }
     }
 
+    public JComboBox<String> getGUITypeSelector() {
+        return guiType;
+    }
+
     private void checkAndUpdateGUISize() {
+        if (guiType.getSelectedIndex() == 0) {
+            guiImage = ImageUtils.toBufferedImage(UIRES.get("invimg").getImage());
+        } else {
+            guiImage = ImageUtils.toBufferedImage(UIRES.get("creative_invimg").getImage());
+        }
         editor.repaint();
     }
 

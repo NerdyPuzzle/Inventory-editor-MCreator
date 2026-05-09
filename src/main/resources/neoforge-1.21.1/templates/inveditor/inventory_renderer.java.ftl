@@ -6,49 +6,74 @@ import net.minecraft.client.gui.components.Button;
 
 <#assign elements = invedits>
 
-<#assign width = 176>
-<#assign height = 166>
-
 <#assign labels = []>
+<#assign labeltypes = []>
 <#assign images = []>
+<#assign imagetypes = []>
 <#assign sprites = []>
+<#assign spritetypes = []>
 <#assign buttons = []>
+<#assign buttontypes = []>
 <#assign imagebuttons = []>
+<#assign imagebuttontypes = []>
 <#assign tooltips = []>
+<#assign tooltiptypes = []>
 <#assign entitymodels = []>
+<#assign entitymodeltypes = []>
 
 <#list elements?filter(e -> e.getComponentsOfType("Label")?size != 0) as edit>
-	<#assign labels += edit.getComponentsOfType("Label")>
+    <#list edit.getComponentsOfType("Label") as item>
+        <#assign labels += [item]>
+        <#assign labeltypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("Image")?size != 0) as edit>
-	<#assign images += edit.getComponentsOfType("Image")>
+    <#list edit.getComponentsOfType("Image") as item>
+        <#assign images += [item]>
+        <#assign imagetypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("Sprite")?size != 0) as edit>
-	<#assign sprites += edit.getComponentsOfType("Sprite")>
+    <#list edit.getComponentsOfType("Sprite") as item>
+        <#assign sprites += [item]>
+        <#assign spritetypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("Button")?size != 0) as edit>
-	<#assign buttons += edit.getComponentsOfType("Button")>
+    <#list edit.getComponentsOfType("Button") as btn>
+        <#assign buttons += [btn]>
+        <#assign buttontypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("ImageButton")?size != 0) as edit>
-	<#assign imagebuttons += edit.getComponentsOfType("ImageButton")>
+    <#list edit.getComponentsOfType("ImageButton") as item>
+        <#assign imagebuttons += [item]>
+        <#assign imagebuttontypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("Tooltip")?size != 0) as edit>
-	<#assign tooltips += edit.getComponentsOfType("Tooltip")>
+    <#list edit.getComponentsOfType("Tooltip") as item>
+        <#assign tooltips += [item]>
+        <#assign tooltiptypes += [edit.type]>
+    </#list>
 </#list>
 
 <#list elements?filter(e -> e.getComponentsOfType("EntityModel")?size != 0) as edit>
-	<#assign entitymodels += edit.getComponentsOfType("EntityModel")>
+    <#list edit.getComponentsOfType("EntityModel") as item>
+        <#assign entitymodels += [item]>
+        <#assign entitymodeltypes += [edit.type]>
+    </#list>
 </#list>
 
 @EventBusSubscriber(Dist.CLIENT)
 public class InventoryRenderer {
 	private static Minecraft mc = Minecraft.getInstance();
-	private static InventoryScreen screen = null;
+	private static EffectRenderingInventoryScreen screen = null;
 
 	<#list images as component>
 	    private static final ResourceLocation IMAGE_${component?index} = ResourceLocation.parse("${modid}:textures/screens/${component.image}");
@@ -64,7 +89,7 @@ public class InventoryRenderer {
 
 	@SubscribeEvent
 	public static void openScreen(ScreenEvent.Opening event) {
-	    if (event.getNewScreen() instanceof InventoryScreen inventory) {
+	    if (event.getNewScreen() instanceof EffectRenderingInventoryScreen inventory) {
 	        if (mc == null) mc = Minecraft.getInstance();
 	        screen = inventory;
 	        <#if buttons?size != 0 || imagebuttons?size != 0>initButtons();</#if>
@@ -74,22 +99,28 @@ public class InventoryRenderer {
     <#if buttons?size != 0 || imagebuttons?size != 0>
 	    @SubscribeEvent
 	    public static void closeScreen(ScreenEvent.Closing event) {
-            if (event.getScreen() instanceof InventoryScreen)
+            if (event.getScreen() instanceof InventoryScreen && !mc.gameMode.hasInfiniteItems())
+                buttons.clear();
+            if (event.getScreen() instanceof CreativeModeInventoryScreen)
                 buttons.clear();
 	    }
 	</#if>
 
 	@SubscribeEvent
 	public static void renderBackground(ContainerScreenEvent.Render.Background event) {
-		if (!(event.getContainerScreen() instanceof InventoryScreen)) return;
+		if (!(event.getContainerScreen() instanceof EffectRenderingInventoryScreen)) return;
 		if (screen == null)
-		    screen = (InventoryScreen) event.getContainerScreen();
+		    screen = (EffectRenderingInventoryScreen) event.getContainerScreen();
 		<#if buttons?size != 0 || imagebuttons?size != 0>
-		    boolean flag = screen.getRecipeBookComponent().isVisible();
+		    boolean flag = (screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen();
             <#assign btid = 0>
             if (!buttons.isEmpty()) {
             <#list buttons as component>
-                buttons.get(${btid}).visible = !flag<#if hasProcedure(component.displayCondition)>&& <@valueProvider component.displayCondition/></#if>;
+                buttons.get(${btid}).visible = flag<#if hasProcedure(component.displayCondition)>&& <@valueProvider component.displayCondition/></#if>;
+                <#assign btid += 1>
+            </#list>
+            <#list imagebuttons as component>
+				buttons.get(${btid}).visible = flag<#if hasProcedure(component.displayCondition)>&& <@valueProvider component.displayCondition/></#if>;
                 <#assign btid += 1>
             </#list>
             }
@@ -99,9 +130,9 @@ public class InventoryRenderer {
 
 	@SubscribeEvent
 	public static void renderForeground(ContainerScreenEvent.Render.Foreground event) {
-		if (!(event.getContainerScreen() instanceof InventoryScreen)) return;
+		if (!(event.getContainerScreen() instanceof EffectRenderingInventoryScreen)) return;
 		if (screen == null)
-		    screen = (InventoryScreen) event.getContainerScreen();
+		    screen = (EffectRenderingInventoryScreen) event.getContainerScreen();
 
 		<#if labels?size != 0>renderLabels(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());</#if>
 		<#if entitymodels?size != 0>renderEntityModels(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());</#if>
@@ -114,21 +145,26 @@ public class InventoryRenderer {
 	    <#list buttons as component>
     	    <#if component.isUndecorated>
     			buttons.add(new PlainTextButton(
-    				screen.getGuiLeft() + ${component.gx(width) + 125}, screen.getGuiTop() + ${component.gy(height) + 37},
+    				screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)},
     				${component.width}, ${component.height},
     				Component.translatable("invedit.${modid}.${component.getName()}"),
     				<@buttonOnClick component/>, mc.font));
     		<#else>
     			buttons.add(Button.builder(Component.translatable("invedit.${modid}.${component.getName()}"), <@buttonOnClick component/>)
-    				.bounds(screen.getGuiLeft() + ${component.gx(width) + 125}, screen.getGuiTop() + ${component.gy(height) + 37},
+    				.bounds(screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)},
     				${component.width}, ${component.height}).build());
+    		</#if>
+    		<#if buttontypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen)
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
     		</#if>
     		((WidgetInvoker)screen).callAddRenderableWidget(buttons.get(${btid}));
     		<#assign btid += 1>
 	    </#list>
 		<#list imagebuttons as component>
 			buttons.add(new ImageButton(
-				screen.getGuiLeft() + ${component.gx(width) + 125}, screen.getGuiTop() + ${component.gy(height) + 37},
+				screen.getGuiLeft() + ${component.gx(getWidth(imagebuttontypes, component?index)) + 125 - (imagebuttontypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${component.gy(getHeight(imagebuttontypes, component?index)) + 37 + (imagebuttontypes[component?index] == 1)?then(15, 0)},
 				${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())},
 				<#if component.hoveredImage?has_content>
 				new WidgetSprites(ResourceLocation.parse("${modid}:textures/screens/${component.image}"), ResourceLocation.parse("${modid}:textures/screens/${component.hoveredImage}")),
@@ -138,10 +174,15 @@ public class InventoryRenderer {
 				<@buttonOnClick component/>
 			) {
 				@Override public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-					if (!screen.getRecipeBookComponent().isVisible()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>)
+					if ((screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>)
 					    guiGraphics.blit(sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
 				}
 			});
+    		<#if imagebuttontypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen)
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
 			((WidgetInvoker)screen).callAddRenderableWidget(buttons.get(${btid}));
 			<#assign btid += 1>
 		</#list>
@@ -151,17 +192,27 @@ public class InventoryRenderer {
 	<#if sprites?size != 0 || images?size != 0>
 	private static void renderImages(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 		<#list images as component>
+    		<#if imagetypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
 			<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
 				guiGraphics.blit(IMAGE_${component?index},
-					screen.getGuiLeft() + ${component.gx(width)}, screen.getGuiTop() + ${component.gy(height)}, 0, 0,
+					screen.getGuiLeft() + ${component.gx(getWidth(imagetypes, component?index))}, screen.getGuiTop() + ${component.gy(getHeight(imagetypes, component?index))}, 0, 0,
 					${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())},
 					${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())});
 			<#if hasProcedure(component.displayCondition)>}</#if>
 		</#list>
     	<#list sprites as component>
+    		<#if spritetypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
     		<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
     			guiGraphics.blit(SPRITE_${component?index},
-    				screen.getGuiLeft() + ${component.gx(width)}, screen.getGuiTop() + ${component.gy(height)},
+    				screen.getGuiLeft() + ${component.gx(getWidth(spritetypes, component?index))}, screen.getGuiTop() + ${component.gy(getHeight(spritetypes, component?index))},
     				<#if (component.getTextureWidth(w.getWorkspace()) > component.getTextureHeight(w.getWorkspace()))>
     					<@getSpriteByIndex component "width"/>, 0
     				<#else>
@@ -177,12 +228,17 @@ public class InventoryRenderer {
 	<#if labels?size != 0>
 	private static void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 		<#list labels as component>
+    		<#if labeltypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
 			</#if>
 			guiGraphics.drawString(mc.font,
 				<#if hasProcedure(component.text)><@valueProvider component.text/><#else>Component.translatable("invedit.${modid}.${component.getName()}")</#if>,
-				${component.gx(width)}, ${component.gy(height)}, ${component.color.getRGB()}, ${component.hasShadow});
+				${component.gx(getWidth(labeltypes, component?index))}, ${component.gy(getHeight(labeltypes, component?index))}, ${component.color.getRGB()}, ${component.hasShadow});
 		</#list>
 	}
 	</#if>
@@ -191,13 +247,18 @@ public class InventoryRenderer {
 	private static void renderEntityModels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 	    <#list entitymodels as component>
 			<#assign followMouse = component.followMouseMovement>
-			<#assign x = component.gx(width)>
-			<#assign y = component.gy(height)>
+			<#assign x = component.gx(getWidth(entitymodeltypes, component?index))>
+			<#assign y = component.gy(getHeight(entitymodeltypes, component?index))>
+    		<#if entitymodeltypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
 			if (<@valueProvider component.entityModel/> instanceof LivingEntity livingEntity) {
 				<#if hasProcedure(component.displayCondition)>
 					if (<@valueProvider component.displayCondition/>)
 				</#if>
-				renderEntityInInventoryFollowsAngle(guiGraphics, screen.getGuiLeft() + ${x + 10 - 125}, screen.getGuiTop() + ${y + 20 - 37}, ${component.scale},
+				renderEntityInInventoryFollowsAngle(guiGraphics, screen.getGuiLeft() + ${x + 10 - 125 + (entitymodeltypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${y + 20 - 37 - (entitymodeltypes[component?index] == 1)?then(15, 0)}, ${component.scale},
 					${component.rotationX / 20.0}f <#if followMouse> + (float) Math.atan((screen.getGuiLeft() + ${x + 10} - mouseX) / 40.0)</#if>,
 					<#if followMouse>(float) Math.atan((screen.getGuiTop() + ${y + 21 - 50} - mouseY) / 40.0)<#else>0</#if>, livingEntity);
 			}
@@ -208,8 +269,13 @@ public class InventoryRenderer {
 	<#if tooltips?size != 0>
 	private static void renderTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 		<#list tooltips as component>
-			<#assign x = component.gx(width)>
-			<#assign y = component.gy(height)>
+			<#assign x = component.gx(getWidth(tooltiptypes, component?index))>
+			<#assign y = component.gy(getHeight(tooltiptypes, component?index))>
+    		<#if tooltiptypes[component?index] == 1>
+    		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
+    		<#else>
+    		    if (screen instanceof InventoryScreen)
+    		</#if>
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
 			</#if>
@@ -217,10 +283,10 @@ public class InventoryRenderer {
 					<#if hasProcedure(component.text)>
 					String hoverText = <@valueProvider component.text/>;
 					if (hoverText != null) {
-						guiGraphics.renderComponentTooltip(mc.font, Arrays.stream(hoverText.split("\n")).map(Component::literal).collect(Collectors.toList()), mouseX - 125, mouseY - 37);
+						guiGraphics.renderComponentTooltip(mc.font, Arrays.stream(hoverText.split("\n")).map(Component::literal).collect(Collectors.toList()), mouseX - 125 + ${(tooltiptypes[component?index] == 1)?then(9, 0)}, mouseY - 37 - ${(tooltiptypes[component?index] == 1)?then(15, 0)});
 					}
 					<#else>
-						guiGraphics.renderTooltip(mc.font, Component.translatable("invedit.${modid}.${component.getName()}"), mouseX - 125, mouseY - 37);
+						guiGraphics.renderTooltip(mc.font, Component.translatable("invedit.${modid}.${component.getName()}"), mouseX - 125 + ${(tooltiptypes[component?index] == 1)?then(9, 0)}, mouseY - 37 - ${(tooltiptypes[component?index] == 1)?then(15, 0)});
 					</#if>
 				}
 		</#list>
@@ -289,10 +355,18 @@ public class InventoryRenderer {
 <#macro buttonOnClick component>
 e -> {
     <#if hasProcedure(component.onClick)>
-	if (!screen.getRecipeBookComponent().isVisible()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>) {
+	if ((screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>) {
 		PacketDistributor.sendToServer(new ${JavaModName}InventoryButtonMessage(${btid}, (int) mc.player.getX(), (int) mc.player.getY(), (int) mc.player.getZ()));
 		${JavaModName}InventoryButtonMessage.handleButtonAction(mc.player, ${btid}, (int) mc.player.getX(), (int) mc.player.getY(), (int) mc.player.getZ());
 	}
 	</#if>
 }
 </#macro>
+
+<#function getWidth types index>
+    <#return (types[index] == 0)?then(176, 195)>
+</#function>
+
+<#function getHeight types index>
+    <#return (types[index] == 0)?then(166, 136)>
+</#function>
