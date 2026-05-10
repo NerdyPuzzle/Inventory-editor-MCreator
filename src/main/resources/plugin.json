@@ -7,7 +7,7 @@
   ],
   "info": {
     "name": "Inventory editor",
-    "version": "1.1",
+    "version": "1.1.1",
     "description": "Allows for editing the vanilla player inventory",
     "author": "NerdyPuzzle"
   }

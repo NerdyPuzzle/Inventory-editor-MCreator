@@ -112,7 +112,7 @@ public class InventoryRenderer {
 		if (screen == null)
 		    screen = (EffectRenderingInventoryScreen) event.getContainerScreen();
 		<#if buttons?size != 0 || imagebuttons?size != 0>
-		    boolean flag = (screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen();
+		    boolean flag = getFlag();
             <#assign btid = 0>
             if (!buttons.isEmpty()) {
             <#list buttons as component>
@@ -174,7 +174,7 @@ public class InventoryRenderer {
 				<@buttonOnClick component/>
 			) {
 				@Override public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-					if ((screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>)
+					if (getFlag()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>)
 					    guiGraphics.blit(sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
 				}
 			});
@@ -316,6 +316,14 @@ public class InventoryRenderer {
 		entity.yHeadRot = f6;
 	}
 	</#if>
+
+	private static boolean getFlag() {
+	    if (screen instanceof InventoryScreen inventory)
+	        return !inventory.getRecipeBookComponent().isVisible();
+	    if (screen instanceof CreativeModeInventoryScreen inventory)
+	        return inventory.isInventoryOpen();
+	    return false;
+	}
 }
 
 <#macro valueProvider procedure="">
@@ -355,7 +363,7 @@ public class InventoryRenderer {
 <#macro buttonOnClick component>
 e -> {
     <#if hasProcedure(component.onClick)>
-	if ((screen instanceof InventoryScreen) ? !((InventoryScreen)screen).getRecipeBookComponent().isVisible() : ((CreativeModeInventoryScreen)screen).isInventoryOpen()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>) {
+	if (getFlag()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>) {
 		PacketDistributor.sendToServer(new ${JavaModName}InventoryButtonMessage(${btid}, (int) mc.player.getX(), (int) mc.player.getY(), (int) mc.player.getZ()));
 		${JavaModName}InventoryButtonMessage.handleButtonAction(mc.player, ${btid}, (int) mc.player.getX(), (int) mc.player.getY(), (int) mc.player.getZ());
 	}
