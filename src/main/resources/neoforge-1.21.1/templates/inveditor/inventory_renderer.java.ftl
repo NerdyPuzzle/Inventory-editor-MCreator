@@ -6,6 +6,12 @@ import net.minecraft.client.gui.components.Button;
 
 <#assign elements = invedits>
 
+<#assign hasCurios = settings.getMCreatorDependenciesRaw()?seq_contains("curios_api")>
+
+<#if hasCurios>
+    import java.lang.reflect.Method;
+</#if>
+
 <#assign labels = []>
 <#assign labeltypes = []>
 <#assign images = []>
@@ -99,7 +105,7 @@ public class InventoryRenderer {
     <#if buttons?size != 0 || imagebuttons?size != 0>
 	    @SubscribeEvent
 	    public static void closeScreen(ScreenEvent.Closing event) {
-            if (event.getScreen() instanceof InventoryScreen && !mc.gameMode.hasInfiniteItems())
+            if (<#if hasCurios>((</#if>event.getScreen() instanceof InventoryScreen<#if hasCurios>) || event.getScreen().getClass().getSimpleName().equals("CuriosScreen"))</#if> && !mc.gameMode.hasInfiniteItems())
                 buttons.clear();
             if (event.getScreen() instanceof CreativeModeInventoryScreen)
                 buttons.clear();
@@ -157,7 +163,7 @@ public class InventoryRenderer {
     		<#if buttontypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen)
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
     		((WidgetInvoker)screen).callAddRenderableWidget(buttons.get(${btid}));
     		<#assign btid += 1>
@@ -181,7 +187,7 @@ public class InventoryRenderer {
     		<#if imagebuttontypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen)
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
 			((WidgetInvoker)screen).callAddRenderableWidget(buttons.get(${btid}));
 			<#assign btid += 1>
@@ -195,7 +201,7 @@ public class InventoryRenderer {
     		<#if imagetypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
 			<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
 				guiGraphics.blit(IMAGE_${component?index},
@@ -208,7 +214,7 @@ public class InventoryRenderer {
     		<#if spritetypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
     		<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
     			guiGraphics.blit(SPRITE_${component?index},
@@ -231,7 +237,7 @@ public class InventoryRenderer {
     		<#if labeltypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
@@ -252,7 +258,7 @@ public class InventoryRenderer {
     		<#if entitymodeltypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
 			if (<@valueProvider component.entityModel/> instanceof LivingEntity livingEntity) {
 				<#if hasProcedure(component.displayCondition)>
@@ -274,7 +280,7 @@ public class InventoryRenderer {
     		<#if tooltiptypes[component?index] == 1>
     		    if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
     		<#else>
-    		    if (screen instanceof InventoryScreen)
+    		    if (<#if hasCurios>(</#if>screen instanceof InventoryScreen<#if hasCurios>) || isCuriosScreen()</#if>)
     		</#if>
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
@@ -322,8 +328,25 @@ public class InventoryRenderer {
 	        return !inventory.getRecipeBookComponent().isVisible();
 	    if (screen instanceof CreativeModeInventoryScreen inventory)
 	        return inventory.isInventoryOpen();
+	    <#if hasCurios>
+	        if (isCuriosScreen()) {
+	            try {
+	                Method method = screen.getClass().getMethod("getRecipeBookComponent");
+	                RecipeBookComponent recipeBook = (RecipeBookComponent) method.invoke(screen);
+	                return !recipeBook.isVisible();
+	            } catch (Exception ignored) {
+	                return false;
+	            }
+	        }
+	    </#if>
 	    return false;
 	}
+
+	<#if hasCurios>
+	    private static boolean isCuriosScreen() {
+	        return (screen instanceof EffectRenderingInventoryScreen) && !(screen instanceof InventoryScreen) && !(screen instanceof CreativeModeInventoryScreen) && screen.getClass().getSimpleName().equals("CuriosScreen");
+	    }
+	</#if>
 }
 
 <#macro valueProvider procedure="">
