@@ -12,14 +12,10 @@ import net.mcreator.workspace.references.ModElementReference;
 import net.mcreator.workspace.references.TextureReference;
 import net.nerdypuzzle.inveditor.parts.gui.InveditGui;
 
-import java.lang.module.ModuleDescriptor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class InventoryEdit extends GeneratableElement implements IGUI {
-    public List<String> mixins =  ModuleDescriptor.Version.parse(getModElement().getGeneratorConfiguration().getGeneratorMinecraftVersion())
-            .compareTo(ModuleDescriptor.Version.parse("1.21.3")) >= 0 ? List.of("WidgetInvoker", "RecipeBookAccessor") : Collections.singletonList("WidgetInvoker");
 
     // Gui editor
     @ModElementReference
