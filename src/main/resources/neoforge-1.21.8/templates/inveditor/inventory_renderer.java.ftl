@@ -101,6 +101,10 @@ public class InventoryRenderer {
 	<#if buttons?size != 0 || imagebuttons?size != 0>
 		@SubscribeEvent
 		public static void closeScreen(ScreenEvent.Closing event) {
+		    if (mc.gameMode == null) {
+		        buttons.clear();
+		        return;
+		    }
 			if (<#if hasCurios>((</#if>event.getScreen() instanceof InventoryScreen<#if hasCurios>) || event.getScreen().getClass().getSimpleName().equals("CuriosScreen"))</#if> && !mc.player.hasInfiniteMaterials())
 				buttons.clear();
 			if (event.getScreen() instanceof CreativeModeInventoryScreen)
