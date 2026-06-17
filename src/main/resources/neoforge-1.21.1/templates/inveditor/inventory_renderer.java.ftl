@@ -101,9 +101,12 @@ public class InventoryRenderer {
 	<#if buttons?size != 0 || imagebuttons?size != 0>
 		@SubscribeEvent
 		public static void closeScreen(ScreenEvent.Closing event) {
-		    if (mc.gameMode == null) {
-		        buttons.clear();
-		        return;
+		    if (mc == null) mc = Minecraft.getInstance();
+		    if (mc != null) {
+		        if (mc.gameMode == null) {
+		            buttons.clear();
+		            return;
+		        }
 		    }
 			if (<#if hasCurios>((</#if>event.getScreen() instanceof InventoryScreen<#if hasCurios>) || event.getScreen().getClass().getSimpleName().equals("CuriosScreen"))</#if> && !mc.gameMode.hasInfiniteItems())
 				buttons.clear();
@@ -115,6 +118,7 @@ public class InventoryRenderer {
 	@SubscribeEvent
 	public static void renderBackground(ContainerScreenEvent.Render.Background event) {
 		if (!(event.getContainerScreen() instanceof EffectRenderingInventoryScreen)) return;
+		if (mc == null) mc = Minecraft.getInstance();
 		if (screen == null)
 			screen = (EffectRenderingInventoryScreen) event.getContainerScreen();
 		<#if buttons?size != 0 || imagebuttons?size != 0>
@@ -136,6 +140,7 @@ public class InventoryRenderer {
 
 	@SubscribeEvent
 	public static void renderForeground(ContainerScreenEvent.Render.Foreground event) {
+		if (mc == null) mc = Minecraft.getInstance();
 		if (!(event.getContainerScreen() instanceof EffectRenderingInventoryScreen)) return;
 		if (screen == null)
 			screen = (EffectRenderingInventoryScreen) event.getContainerScreen();
