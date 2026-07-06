@@ -48,7 +48,7 @@ package ${package}.network;
 
 @EventBusSubscriber public record ${JavaModName}InventoryButtonMessage(int buttonID, int x, int y, int z) implements CustomPacketPayload {
 
-	public static final Type<${JavaModName}InventoryButtonMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(${JavaModName}.MODID, "invedit_buttons"));
+	public static final Type<${JavaModName}InventoryButtonMessage> TYPE = new Type<>(Identifier.fromNamespaceAndPath(${JavaModName}.MODID, "invedit_buttons"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, ${JavaModName}InventoryButtonMessage> STREAM_CODEC = StreamCodec.of(
 			(RegistryFriendlyByteBuf buffer, ${JavaModName}InventoryButtonMessage message) -> {

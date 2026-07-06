@@ -78,11 +78,11 @@ public class InventoryRenderer {
 	private static AbstractContainerScreen screen = null;
 
 	<#list images as component>
-		private static final ResourceLocation IMAGE_${component?index} = ResourceLocation.parse("${modid}:textures/screens/${component.image}");
+		private static final Identifier IMAGE_${component?index} = Identifier.parse("${modid}:textures/screens/${component.image}");
 	</#list>
 
 	<#list sprites as component>
-		private static final ResourceLocation SPRITE_${component?index} = ResourceLocation.parse("${modid}:textures/screens/${component.sprite}");
+		private static final Identifier SPRITE_${component?index} = Identifier.parse("${modid}:textures/screens/${component.sprite}");
 	</#list>
 
 	<#if buttons?size != 0 || imagebuttons?size != 0>
@@ -156,26 +156,29 @@ public class InventoryRenderer {
 		<#list buttons as component>
 			<#if component.isUndecorated>
 				buttons.add(new PlainTextButton(
-						screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)},
+						screen.getLeftPos() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)}, screen.getTopPos() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)},
 						${component.width}, ${component.height},
 						Component.translatable("invedit.${modid}.${component.getName()}"),
 						<@buttonOnClick component/>, mc.font
 					) {
-						@Override public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-							this.setX(screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index))});
-							this.setY(screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index))});
-							super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+						@Override public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+							this.setX(screen.getLeftPos() + ${component.gx(getWidth(buttontypes, component?index))});
+							this.setY(screen.getTopPos() + ${component.gy(getHeight(buttontypes, component?index))});
+							super.extractContents(guiGraphics, mouseX, mouseY, partialTicks);
 						}
 					});
 			<#else>
-				buttons.add(new Button(Button.builder(Component.translatable("invedit.${modid}.${component.getName()}"), <@buttonOnClick component/>)
-						.bounds(screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)},
-						screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)}, ${component.width}, ${component.height})
+				buttons.add(new PlainTextButton(
+						screen.getLeftPos() + ${component.gx(getWidth(buttontypes, component?index)) + 125 - (buttontypes[component?index] == 1)?then(9, 0)}, screen.getTopPos() + ${component.gy(getHeight(buttontypes, component?index)) + 37 + (buttontypes[component?index] == 1)?then(15, 0)},
+						${component.width}, ${component.height},
+						Component.translatable("invedit.${modid}.${component.getName()}"),
+						<@buttonOnClick component/>, mc.font
 					) {
-						@Override public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-							this.setX(screen.getGuiLeft() + ${component.gx(getWidth(buttontypes, component?index))});
-							this.setY(screen.getGuiTop() + ${component.gy(getHeight(buttontypes, component?index))});
-							super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+						@Override public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+							this.setX(screen.getLeftPos() + ${component.gx(getWidth(buttontypes, component?index))});
+							this.setY(screen.getTopPos() + ${component.gy(getHeight(buttontypes, component?index))});
+							this.extractDefaultSprite(guiGraphics);
+							this.extractDefaultLabel(guiGraphics.textRenderer());
 						}
 					});
 			</#if>
@@ -189,18 +192,18 @@ public class InventoryRenderer {
 		</#list>
 		<#list imagebuttons as component>
 			buttons.add(new ImageButton(
-				screen.getGuiLeft() + ${component.gx(getWidth(imagebuttontypes, component?index)) + 125 - (imagebuttontypes[component?index] == 1)?then(9, 0)}, screen.getGuiTop() + ${component.gy(getHeight(imagebuttontypes, component?index)) + 37 + (imagebuttontypes[component?index] == 1)?then(15, 0)},
+				screen.getLeftPos() + ${component.gx(getWidth(imagebuttontypes, component?index)) + 125 - (imagebuttontypes[component?index] == 1)?then(9, 0)}, screen.getTopPos() + ${component.gy(getHeight(imagebuttontypes, component?index)) + 37 + (imagebuttontypes[component?index] == 1)?then(15, 0)},
 				${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())},
 				<#if component.hoveredImage?has_content>
-				new WidgetSprites(ResourceLocation.parse("${modid}:textures/screens/${component.image}"), ResourceLocation.parse("${modid}:textures/screens/${component.hoveredImage}")),
+				new WidgetSprites(Identifier.parse("${modid}:textures/screens/${component.image}"), Identifier.parse("${modid}:textures/screens/${component.hoveredImage}")),
 				<#else>
-				new WidgetSprites(ResourceLocation.parse("${modid}:textures/screens/${component.image}"), ResourceLocation.parse("${modid}:textures/screens/${component.image}")),
+				new WidgetSprites(Identifier.parse("${modid}:textures/screens/${component.image}"), Identifier.parse("${modid}:textures/screens/${component.image}")),
 				</#if>
 				<@buttonOnClick component/>
 			) {
-				@Override public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-					this.setX(screen.getGuiLeft() + ${component.gx(getWidth(imagebuttontypes, component?index))});
-					this.setY(screen.getGuiTop() + ${component.gy(getHeight(imagebuttontypes, component?index))});
+				@Override public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+					this.setX(screen.getLeftPos() + ${component.gx(getWidth(imagebuttontypes, component?index))});
+					this.setY(screen.getTopPos() + ${component.gy(getHeight(imagebuttontypes, component?index))});
 					if (getFlag()<#if hasProcedure(component.displayCondition)> && <@valueProvider component.displayCondition/></#if>)
 						guiGraphics.blit(RenderPipelines.GUI_TEXTURED, sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
 				}
@@ -217,7 +220,7 @@ public class InventoryRenderer {
 	</#if>
 
 	<#if sprites?size != 0 || images?size != 0>
-	private static void renderImages(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+	private static void renderImages(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 		<#list images as component>
 			<#if imagetypes[component?index] == 1>
 				if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
@@ -226,7 +229,7 @@ public class InventoryRenderer {
 			</#if>
 			<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, IMAGE_${component?index},
-					screen.getGuiLeft() + ${component.gx(getWidth(imagetypes, component?index))}, screen.getGuiTop() + ${component.gy(getHeight(imagetypes, component?index))}, 0, 0,
+					screen.getLeftPos() + ${component.gx(getWidth(imagetypes, component?index))}, screen.getTopPos() + ${component.gy(getHeight(imagetypes, component?index))}, 0, 0,
 					${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())},
 					${component.getWidth(w.getWorkspace())}, ${component.getHeight(w.getWorkspace())});
 			<#if hasProcedure(component.displayCondition)>}</#if>
@@ -239,7 +242,7 @@ public class InventoryRenderer {
 			</#if>
 			<#if hasProcedure(component.displayCondition)>if (<@valueProvider component.displayCondition/>) {</#if>
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, SPRITE_${component?index},
-					screen.getGuiLeft() + ${component.gx(getWidth(spritetypes, component?index))}, screen.getGuiTop() + ${component.gy(getHeight(spritetypes, component?index))},
+					screen.getLeftPos() + ${component.gx(getWidth(spritetypes, component?index))}, screen.getTopPos() + ${component.gy(getHeight(spritetypes, component?index))},
 					<#if (component.getTextureWidth(w.getWorkspace()) > component.getTextureHeight(w.getWorkspace()))>
 						<@getSpriteByIndex component "width"/>, 0
 					<#else>
@@ -253,7 +256,7 @@ public class InventoryRenderer {
 	</#if>
 
 	<#if labels?size != 0>
-	private static void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+	private static void renderLabels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 		<#list labels as component>
 			<#if labeltypes[component?index] == 1>
 				if (screen instanceof CreativeModeInventoryScreen inventory && inventory.isInventoryOpen())
@@ -263,7 +266,7 @@ public class InventoryRenderer {
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
 			</#if>
-			guiGraphics.drawString(mc.font,
+			guiGraphics.text(mc.font,
 				<#if hasProcedure(component.text)><@valueProvider component.text/><#else>Component.translatable("invedit.${modid}.${component.getName()}")</#if>,
 				${component.gx(getWidth(labeltypes, component?index))}, ${component.gy(getHeight(labeltypes, component?index))}, ${component.color.getRGB()}, ${component.hasShadow});
 		</#list>
@@ -271,7 +274,7 @@ public class InventoryRenderer {
 	</#if>
 
 	<#if entitymodels?size != 0>
-	private static void renderEntityModels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+	private static void renderEntityModels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 		<#list entitymodels as component>
 			<#assign followMouse = component.followMouseMovement>
 			<#assign x = component.gx(getWidth(entitymodeltypes, component?index))>
@@ -286,11 +289,11 @@ public class InventoryRenderer {
 					if (<@valueProvider component.displayCondition/>)
 				</#if>
 				InventoryScreen.renderEntityInInventoryFollowsAngle(guiGraphics,
-					screen.getGuiLeft() + ${x + (10 - 1000)}, screen.getGuiTop() + ${y + (20 - 1000)},
-					screen.getGuiLeft() + ${x + (10 + 1000)}, screen.getGuiTop() + ${y + (20 + 1000)},
+					screen.getLeftPos() + ${x + (10 - 1000)}, screen.getTopPos() + ${y + (20 - 1000)},
+					screen.getLeftPos() + ${x + (10 + 1000)}, screen.getTopPos() + ${y + (20 + 1000)},
 					${component.scale}, -livingEntity.getBbHeight() / (2.0f * livingEntity.getScale()),
-					${component.rotationX / 20.0}f <#if followMouse> + (float) Math.atan((screen.getGuiLeft() + ${x + 10} - mouseX) / 40.0)</#if>,
-					<#if followMouse>(float) Math.atan((screen.getGuiTop() + ${y + 21 - 50} - mouseY) / 40.0)<#else>0</#if>, livingEntity
+					${component.rotationX / 20.0}f <#if followMouse> + (float) Math.atan((screen.getLeftPos() + ${x + 10} - mouseX) / 40.0)</#if>,
+					<#if followMouse>(float) Math.atan((screen.getTopPos() + ${y + 21 - 50} - mouseY) / 40.0)<#else>0</#if>, livingEntity
 				);
 			}
 		</#list>
@@ -298,7 +301,7 @@ public class InventoryRenderer {
 	</#if>
 
 	<#if tooltips?size != 0>
-	private static void renderTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+	private static void renderTooltips(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 		<#list tooltips as component>
 			<#assign x = component.gx(getWidth(tooltiptypes, component?index))>
 			<#assign y = component.gy(getHeight(tooltiptypes, component?index))>
@@ -310,7 +313,7 @@ public class InventoryRenderer {
 			<#if hasProcedure(component.displayCondition)>
 				if (<@valueProvider component.displayCondition/>)
 			</#if>
-				if (mouseX > screen.getGuiLeft() + ${x} && mouseX < screen.getGuiLeft() + ${x + component.width} && mouseY > screen.getGuiTop() + ${y} && mouseY < screen.getGuiTop() + ${y + component.height}) {
+				if (mouseX > screen.getLeftPos() + ${x} && mouseX < screen.getLeftPos() + ${x + component.width} && mouseY > screen.getTopPos() + ${y} && mouseY < screen.getTopPos() + ${y + component.height}) {
 					<#if hasProcedure(component.text)>
 					String hoverText = <@valueProvider component.text/>;
 					if (hoverText != null) {
