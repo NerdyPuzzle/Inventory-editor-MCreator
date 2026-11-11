@@ -46,10 +46,10 @@ public class InventoryEditGUI extends ModElementGUI<InventoryEdit> {
         guiEditor.renderBgLayer.setSelected(true);
         guiEditor.getGUITypeSelector().setSelectedIndex(invEditor.type);
         if (invEditor.gridSettings != null) {
-            guiEditor.sx.setValue(invEditor.gridSettings.sx);
-            guiEditor.sy.setValue(invEditor.gridSettings.sy);
-            guiEditor.ox.setValue(invEditor.gridSettings.ox);
-            guiEditor.oy.setValue(invEditor.gridSettings.oy);
+            guiEditor.sx.setValue(invEditor.gridSettings.spacingX);
+            guiEditor.sy.setValue(invEditor.gridSettings.spacingY);
+            guiEditor.ox.setValue(invEditor.gridSettings.offsetX);
+            guiEditor.oy.setValue(invEditor.gridSettings.offsetY);
             guiEditor.snapOnGrid.setSelected(invEditor.gridSettings.snapOnGrid);
             if (invEditor.gridSettings.snapOnGrid) {
                 guiEditor.editor.showGrid = true;
@@ -64,10 +64,10 @@ public class InventoryEditGUI extends ModElementGUI<InventoryEdit> {
         
         // Gui editor
         invEditor.components = guiEditor.getComponentList();
-        invEditor.gridSettings.sx = (int) guiEditor.sx.getValue();
-        invEditor.gridSettings.sy = (int) guiEditor.sy.getValue();
-        invEditor.gridSettings.ox = (int) guiEditor.ox.getValue();
-        invEditor.gridSettings.oy = (int) guiEditor.oy.getValue();
+        invEditor.gridSettings.spacingX = (int) guiEditor.sx.getValue();
+        invEditor.gridSettings.spacingY = (int) guiEditor.sy.getValue();
+        invEditor.gridSettings.offsetX = (int) guiEditor.ox.getValue();
+        invEditor.gridSettings.offsetY = (int) guiEditor.oy.getValue();
         invEditor.type = guiEditor.getGUITypeSelector().getSelectedIndex();
         invEditor.gridSettings.snapOnGrid = guiEditor.snapOnGrid.isSelected();
 
